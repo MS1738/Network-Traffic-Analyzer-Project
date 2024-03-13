@@ -12,9 +12,13 @@ def process_packet(packet):
         # Store features for clustering
         features.append([packet_size])
 
+def get_cluster_centers():
+    
+    # Return the cluster centers
+    return kmeans.cluster_centers_
 
 # Sniff packets and process them in real-time
-sniff(iface="Wi-Fi", prn=process_packet, store=False, timeout=10)  # Timeout of 60 seconds
+sniff(iface="Ethernet", prn=process_packet, store=False, timeout=10)  # Timeout of 60 seconds
 
 # Convert features to numpy array for clustering
 X = np.array(features)
