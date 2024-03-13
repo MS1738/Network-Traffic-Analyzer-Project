@@ -12,10 +12,6 @@ def process_packet(packet):
         # Store features for clustering
         features.append([packet_size])
 
-def get_cluster_centers():
-    
-    # Return the cluster centers
-    return kmeans.cluster_centers_
 
 # Sniff packets and process them in real-time
 sniff(iface="Ethernet", prn=process_packet, store=False, timeout=10)  # Timeout of 60 seconds
@@ -25,6 +21,11 @@ X = np.array(features)
 
 # Initializes a KMeans clustering object with the specified number of clusters
 kmeans = KMeans(n_clusters=5, random_state=0).fit(X)
+
+def get_cluster_centers():
+    
+    # Return the cluster centers
+    return kmeans.cluster_centers_
 
 # Print clustering results
 print("Cluster Centers:")
