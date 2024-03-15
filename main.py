@@ -3,21 +3,19 @@ from scapy.layers.inet import IP, TCP
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 import numpy as np
-from behaviour import get_cluster_centers
-
-
+from behaviour import get_cluster_centers # runs the behaviour analysis file first
 
 packet_counter = 0  # Global variable to store the packet counter
 packet_sizes = []    # List to store packet sizes for visualization
 malicious_domains = [] # malicious domain names
 
-cluster_centers = get_cluster_centers()
+cluster_centers = get_cluster_centers() # to store cluster center information after running behavour analysis file
 
 def process_packet(packet):
     global packet_counter  # Use the global packet_counter variable
     packet_counter += 1  # Increment the packet counter
 
-    if IP in packet:            # 1. Packet Capture and Analysis - TCP header
+    if IP in packet:            # 1. Packet Capture and Analysis - IP header
         ip_src = packet[IP].src
         ip_dst = packet[IP].dst
         packet_size = len(packet)
@@ -55,13 +53,21 @@ def process_packet(packet):
         if packet.haslayer(DNS) and packet[DNS].qd is not None and str(packet[DNS].qd.qname, 'utf-8') in malicious_domains:
             print(f"Packet #{packet_counter}: Potential malicious activity - Detected suspicious DNS request")    
 
-
-
-
-
         # Check payload for known malicious signatures
-        # if packet.haslayer(Raw) and "malicious_string" in str(packet[Raw].load): # replace malicious_string
-        #     print(f"Packet #{packet_counter}: Potential malicious activity - Detected malicious payload")
+        if packet.haslayer(Raw):
+            payload = str(packet[Raw].load, 'utf-8', errors='ignore')  # Convert payload to string
+            malicious_strings = [
+                "' OR 1=1 --",
+                "'; DROP TABLE users--",
+                "<script>alert('XSS')</script>",
+                "; ls -la",
+                "& rm -rf /",
+                # Add more malicious strings here
+            ]
+            for malicious_string in malicious_strings:
+                if malicious_string in payload:
+                    print(f"Packet #{packet_counter}: Potential malicious activity - Detected malicious payload containing: {malicious_string}")
+                    break  # Exit the loop after the first match is found
 
 
 # Sniff packets and process them
