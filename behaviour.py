@@ -2,6 +2,7 @@ from scapy.all import *
 from scapy.layers.inet import IP
 from sklearn.cluster import KMeans
 import numpy as np
+from scipy import stats
 
 features = []
 
@@ -19,13 +20,20 @@ sniff(iface="Ethernet", prn=process_packet, store=False, timeout=10)  # Timeout 
 # Convert features to numpy array for clustering
 X = np.array(features)
 
-# Initializes a KMeans clustering object with the specified number of clusters
-kmeans = KMeans(n_clusters=5, random_state=0).fit(X)
+# Calculate the absolute Z-scores for each feature (packet size)
+z_scores = np.abs(stats.zscore(X, axis=0))
 
-def get_cluster_centers():
-    
-    # Return the cluster centers
-    return kmeans.cluster_centers_
+# Adjust the threshold as needed
+threshold = 5
+filtered_indices = np.all(z_scores < threshold, axis=1)
+X_filtered = X[filtered_indices]
+
+# Initializes a KMeans clustering object with the specified number of clusters
+kmeans = KMeans(n_clusters=5, random_state=0).fit(X_filtered)
+
+def get_cluster_info():
+    # Return the cluster centers and Z-scores
+    return kmeans.cluster_centers_, z_scores
 
 # Print clustering results
 print("Cluster Centers:")
