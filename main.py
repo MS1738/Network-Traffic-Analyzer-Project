@@ -3,13 +3,16 @@ from scapy.layers.inet import IP, TCP
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 import numpy as np
-from behaviour import get_cluster_centers # runs the behaviour analysis file first
+from behaviour import get_cluster_info # runs the behaviour analysis file first
 
 packet_counter = 0  # Global variable to store the packet counter
 packet_sizes = []    # List to store packet sizes for visualization
 malicious_domains = [] # malicious domain names
 
-cluster_centers = get_cluster_centers() # to store cluster center information after running behavour analysis file
+time_length = 5 # duration of program
+interface = "Ethernet" # interface to sniff packets on
+
+cluster_centers, z_scores = get_cluster_info() # to store cluster center and z-score information after running behavour analysis file
 
 def process_packet(packet):
     global packet_counter  # Use the global packet_counter variable
@@ -24,10 +27,19 @@ def process_packet(packet):
         # Print packet number, advanced packet information, and packet size
         print(f"Packet #{packet_counter}: IP Source: {ip_src} --> IP Destination: {ip_dst}")
         print(f"Packet #{packet_counter}: Packet Size: {packet_size} bytes")
+  
+        # Check if packet size is within a reasonable range of any cluster center
+        is_anomaly = True
+        threshold = 5 # value we are using to determine if a packet size is within a reasonable range of any cluster center
+        for z_score in z_scores:
+            # If the absolute Z-score for a packet size is less than or equal to this threshold, we consider the packet size to be within a reasonable range.
+            if abs(z_score) <= threshold:  # if the absolute Z-score is less than or equal to the threshold, meaning reasonable range
+                is_anomaly = False
+                break
 
-
-        if packet_size > np.max(cluster_centers):
-            print(f"\033[91mPacket #{packet_counter}: Anomaly detected - Packet size above maximum cluster center ({np.max(cluster_centers)} bytes)\033[0m")
+        if is_anomaly:
+            print(f"\033[91mPacket #{packet_counter}: Anomaly detected - Packet size outside cluster centers range\033[0m")
+                        
 
         # 2. Protocol Decoding
         # Check for unusual TCP ports
@@ -36,13 +48,7 @@ def process_packet(packet):
             
         # Detect HTTP packets
         if packet.haslayer(TCP) and (packet[TCP].dport == 80 or packet[TCP].dport == 443):
-            print(f"Packet #{packet_counter}: HTTP/HTTPS packet detected")    
-
-        # Check for unusually high packet rate
-        threshold = 500  # Adjust the threshold as needed
-        if len(packet) > threshold:
-            print(f"Packet #{packet_counter}: Potential malicious activity - High packet rate")
-            
+            print(f"Packet #{packet_counter}: HTTP/HTTPS packet detected")               
             
         # Read the list of malicious domain names or IP addresses from a file
         file_path = "C:/Users/Maulik Suryavanshi/VSCode Projects/Python/Network Traffic Analyzer/Network-Traffic-Analyzer-Project/malicious_domains.txt"
@@ -71,7 +77,7 @@ def process_packet(packet):
 
 
 # Sniff packets and process them
-sniff(iface="Ethernet", prn=process_packet, store=False, timeout=10) # adjust timeout for how long we want it to run for
+sniff(iface=interface, prn=process_packet, store=False, timeout=time_length) # adjust timeout for how long we want it to run for
 
 # 3. Traffic Monitoring and Visualization
 # Visualization - very minimal for now
