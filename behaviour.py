@@ -1,13 +1,49 @@
 from scapy.all import *
+from tkinter import *
 from scapy.layers.inet import IP
 from sklearn.cluster import KMeans
 import numpy as np
 from scipy import stats
+import tkinter as tk
+from tkinter import ttk
+from tkinter import simpledialog
 
 features = []
 
-time_length = 5 # duration of program
-interface = "Ethernet" # interface to sniff packets on
+# Create a function to set the time length and interface
+def set_values():
+    global time_length, interface
+    time_length = int(time_length_entry.get())
+    interface = interface_entry.get()
+    root.destroy()
+
+# Create a Tkinter window
+root = Tk()
+root.title("Network Traffic Analyzer")
+root.geometry("1100x800")
+
+# Create a frame to hold the widgets and center the frame
+frame = Frame(root)
+frame.pack(pady=150)
+
+# Add labels and entry widgets for time length and interface
+Label(root, text="Time Length (in seconds):", font=("Verdana", 12)).pack(anchor="center")
+time_length_entry = Entry(root, font=("Verdana", 12), width=10)
+time_length_entry.insert(0, "5")  # Default value
+time_length_entry.pack()
+
+Label(root, text="Interface (must be exact match):", font=("Verdana", 12)).pack(anchor="center")
+interface_entry = Entry(root, font=("Verdana", 12), width=20)
+interface_entry.insert(0, "Ethernet")  # Default value
+interface_entry.pack()
+
+# Add a button to set the values
+Button(root, text="Set Values", command=set_values, font=("Verdana", 12)).pack(anchor="center")
+
+
+# Start the Tkinter event loop
+root.mainloop()
+
 
 def process_packet(packet):
 
