@@ -6,6 +6,9 @@ from scipy import stats
 
 features = []
 
+time_length = 5 # duration of program
+interface = "Ethernet" # interface to sniff packets on
+
 def process_packet(packet):
 
     if IP in packet:         
@@ -15,7 +18,7 @@ def process_packet(packet):
 
 
 # Sniff packets and process them in real-time
-sniff(iface="Ethernet", prn=process_packet, store=False, timeout=10)  # Timeout of 60 seconds
+sniff(iface=interface, prn=process_packet, store=False, timeout=time_length)  # Timeout of 60 seconds
 
 # Convert features to numpy array for clustering
 X = np.array(features)
