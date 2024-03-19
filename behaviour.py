@@ -4,9 +4,6 @@ from scapy.layers.inet import IP
 from sklearn.cluster import KMeans
 import numpy as np
 from scipy import stats
-import tkinter as tk
-from tkinter import ttk
-from tkinter import simpledialog
 
 features = []
 
