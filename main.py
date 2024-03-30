@@ -21,6 +21,8 @@ start_time = time.time()
 
 cluster_centers, z_scores = get_cluster_info() # to store cluster center and z-score information after running behavour analysis file
 
+packet_summaries = []  # List to store packet summaries
+
 def process_packet(packet):
     global malicious_packets_counter
     global anamoly_packets_counter
@@ -49,11 +51,21 @@ def process_packet(packet):
         if is_anomaly:
             print(f"\033[91mPacket #{packet_counter}: Anomaly detected - Packet size outside cluster centers range\033[0m")
             anamoly_packets_counter += 1
+            packet_summaries.append(f"Packet #{packet_counter}:\n"
+                                   f"Source IP: {ip_src}\n"
+                                   f"Destination IP: {ip_dst}\n"
+                                   f"Packet Size: {packet_size} bytes\n"
+                                   f"Raw Packet Data: {packet.summary()}\n\n")
                         
         # Check for unusual TCP ports
         if packet.haslayer(TCP) and packet[TCP].dport not in [80, 443, 22]:
             print(f"Packet #{packet_counter}: Potential malicious activity - Unusual TCP port (Source: {ip_src}, Destination: {ip_dst}, Port: {packet[TCP].dport})")
             malicious_packets_counter += 1
+            packet_summaries.append(f"Packet #{packet_counter}:\n"
+                                   f"Source IP: {ip_src}\n"
+                                   f"Destination IP: {ip_dst}\n"
+                                   f"Packet Size: {packet_size} bytes\n"
+                                   f"Raw Packet Data: {packet.summary()}\n\n")
             
             
         # Detect HTTP packets
@@ -68,7 +80,12 @@ def process_packet(packet):
         # if the packet has the domain from that list, flag that packet as malicious
         if packet.haslayer(DNS) and packet[DNS].qd is not None and str(packet[DNS].qd.qname, 'utf-8') in malicious_domains:
             print(f"Packet #{packet_counter}: Potential malicious activity - Detected suspicious DNS request") 
-            malicious_packets_counter += 1 
+            malicious_packets_counter += 1
+            packet_summaries.append(f"Packet #{packet_counter}:\n"
+                                   f"Source IP: {ip_src}\n"
+                                   f"Destination IP: {ip_dst}\n"
+                                   f"Packet Size: {packet_size} bytes\n"
+                                   f"Raw Packet Data: {packet.summary()}\n\n") 
 
         # Check payload for known malicious signatures
         if packet.haslayer(Raw):
@@ -85,6 +102,11 @@ def process_packet(packet):
                 if malicious_string in payload:
                     print(f"Packet #{packet_counter}: Potential malicious activity - Detected malicious payload containing: {malicious_string}")
                     malicious_packets_counter += 1
+                    packet_summaries.append(f"Packet #{packet_counter}:\n"
+                                   f"Source IP: {ip_src}\n"
+                                   f"Destination IP: {ip_dst}\n"
+                                   f"Packet Size: {packet_size} bytes\n"
+                                   f"Raw Packet Data: {packet.summary()}\n\n")
                     break  # Exit the loop after the first match is found
 
 
@@ -118,16 +140,14 @@ summary_text.pack(pady=10)
 summary_text.insert(END, f"Total Packets Analyzed: {packet_counter}\n", ('Verdana', 12)) 
 summary_text.insert(END, f"Malicious Packets Detected: {malicious_packets_counter}\n", ('Verdana', 12))
 summary_text.insert(END, f"Anomalies Detected: {anamoly_packets_counter}\n", ('Verdana', 12))
-summary_text.insert(END, f"Time Elapsed: {elapsed_time:.2f} seconds\n", ('Verdana', 12))
+summary_text.insert(END, f"Time Elapsed: {elapsed_time:.2f} seconds\n\n", ('Verdana', 12))
 # Add more summary information as needed
 
-# # Add a button to further inspect malicious packets
-# def inspect_packets():
-#     # Add code here to display further inspection options for malicious packets
-#     pass
+summary_text.insert(END, f"Packets flagged as Potentially Malicious: \n\n", ('Verdana', 12))
+# Display the packet summaries in the summary_text box
+for summary in packet_summaries:
+    summary_text.insert(END, summary + "\n") 
 
-# inspect_button = Button(summary_window, text="Inspect Malicious Packets", command=inspect_packets, font=("Arial", 12))
-# inspect_button.pack(pady=10)
 
 # Add the packet size visualization
 plt.figure(figsize=(8, 6))
