@@ -17,7 +17,7 @@ def set_values():
 # Create a Tkinter window
 root = Tk()
 root.title("Network Traffic Analyzer")
-root.geometry("1100x800")
+root.geometry("500x500")
 
 # Create a frame to hold the widgets and center the frame
 frame = Frame(root)
