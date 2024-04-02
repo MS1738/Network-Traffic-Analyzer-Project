@@ -69,7 +69,7 @@ kmeans = KMeans(n_clusters=5, random_state=0).fit(X_filtered)
 
 def get_cluster_info():
     # Return the cluster centers and Z-scores
-    return kmeans.cluster_centers_, z_scores
+    return kmeans.cluster_centers_, z_scores, time_length
 
 # Print clustering results
 print("Cluster Centers:")

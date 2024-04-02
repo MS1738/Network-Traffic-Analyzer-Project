@@ -5,7 +5,7 @@ from matplotlib.backends.backend_tkagg import *
 from tkinter import messagebox
 import matplotlib.pyplot as plt
 import time
-from behaviour import get_cluster_info # runs the behaviour analysis file first
+from behaviour import get_cluster_info, time_length # runs the behaviour analysis file first
 
 packet_counter = 0  # Global variable to store the packet counter
 packet_sizes = []    # List to store packet sizes for visualization
@@ -14,12 +14,11 @@ malicious_domains = [] # malicious domain names
 malicious_packets_counter = 0
 anamoly_packets_counter = 0
 
-time_length = 5 # duration of program
 interface = "Ethernet" # interface to sniff packets on
 
 start_time = time.time()
 
-cluster_centers, z_scores = get_cluster_info() # to store cluster center and z-score information after running behavour analysis file
+cluster_centers, z_scores, time_length = get_cluster_info() # to store cluster center and z-score information after running behavour analysis file
 
 packet_summaries = []  # List to store packet summaries
 
