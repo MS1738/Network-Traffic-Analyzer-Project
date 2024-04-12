@@ -60,7 +60,7 @@ X = np.array(features)
 z_scores = np.abs(stats.zscore(X, axis=0))
 
 # Adjust the threshold as needed
-threshold = 5
+threshold = 4
 filtered_indices = np.all(z_scores < threshold, axis=1)
 X_filtered = X[filtered_indices]
 
